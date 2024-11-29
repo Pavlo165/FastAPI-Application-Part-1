@@ -24,7 +24,7 @@ h1 {
 .cve-list {
     display: flex;
     flex-direction: column;
-    gap: 20px; /* Додає відступи між блоками */
+    gap: 20px;
 }
 
 .cve-item {
@@ -33,7 +33,7 @@ h1 {
     border: 1px solid #ddd;
     border-radius: 8px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    margin-bottom: 20px; /* Забезпечує додатковий відступ */
+    margin-bottom: 20px;
 }
 
 .cve-item h2 {
