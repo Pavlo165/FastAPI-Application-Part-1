@@ -47,17 +47,14 @@ def get_all(request: Request, page: int):
 
         vulnerabilities = data["vulnerabilities"]
 
-        # Поточна дата та дата 5 днів тому
         current_date = datetime.utcnow()
         date_threshold = current_date - timedelta(days=30)
 
-        # Фільтруємо уразливості за датою
         recent_vulnerabilities = [
             vuln for vuln in vulnerabilities
             if datetime.strptime(vuln["dateAdded"], "%Y-%m-%d") >= date_threshold
         ]
 
-        # Пагінація
         start_index = (page - 1) * 40
         end_index = start_index + 40
 
