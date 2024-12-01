@@ -5,6 +5,7 @@ from fastapi.templating import Jinja2Templates
 from fastapi.requests import Request
 import os
 import json
+from datetime import datetime, timedelta
 
 app = FastAPI()
 JSON_FILE = "known_exploited_vulnerabilities.json"
@@ -46,15 +47,26 @@ def get_all(request: Request, page: int):
 
         vulnerabilities = data["vulnerabilities"]
 
+        # Поточна дата та дата 5 днів тому
+        current_date = datetime.utcnow()
+        date_threshold = current_date - timedelta(days=30)
+
+        # Фільтруємо уразливості за датою
+        recent_vulnerabilities = [
+            vuln for vuln in vulnerabilities
+            if datetime.strptime(vuln["dateAdded"], "%Y-%m-%d") >= date_threshold
+        ]
+
+        # Пагінація
         start_index = (page - 1) * 40
         end_index = start_index + 40
 
-        if start_index >= len(vulnerabilities) or page < 1:
+        if start_index >= len(recent_vulnerabilities) or page < 1:
             raise HTTPException(status_code=404, detail="Page not found")
 
-        paginated_data = vulnerabilities[start_index:end_index]
+        paginated_data = recent_vulnerabilities[start_index:end_index]
 
-        total_pages = (len(vulnerabilities) + 40 - 1) // 40
+        total_pages = (len(recent_vulnerabilities) + 40 - 1) // 40
 
         return templates.TemplateResponse(
             "getall.html",
@@ -72,6 +84,9 @@ def get_all(request: Request, page: int):
 
 @app.get("/get/new", response_class=HTMLResponse)
 def get_new(request: Request):
+    """
+    Return only new cve
+    """
     try:
         if not os.path.exists(JSON_FILE):
             raise FileNotFoundError(f"Where file?")
@@ -103,6 +118,9 @@ def get_new(request: Request):
 
 @app.get("/get/known", response_class=HTMLResponse)
 def get_known(request: Request):
+    """
+    Return only known cve
+    """
     try:
         if not os.path.exists(JSON_FILE):
             raise FileNotFoundError(f"Where file?")
@@ -133,6 +151,9 @@ def get_known(request: Request):
 
 @app.get("/get", response_class=HTMLResponse)
 def search_cve(request: Request, query: str = Query(..., min_length=1)):
+    """
+    Return only cve with query word
+    """
     try:
         if not os.path.exists(JSON_FILE):
             raise FileNotFoundError(f"Where file?")
